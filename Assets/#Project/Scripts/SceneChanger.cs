@@ -10,14 +10,6 @@ public class SceneChanger : MonoBehaviour
     {
     }
 
-    public void Load()
-    {
-        int index = SceneManager.GetActiveScene().buildIndex; //charge l'index de scène suivante o/ et après on load la scène
-        SceneManager.LoadScene(index + 1);
-        //Debug.Log("ok I'm in");
-
-
-    }
 
     public void Change(string sceneName)
     {

@@ -2,70 +2,72 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using UnityEngine.Events;
 
+
+[RequireComponent(typeof(NavMeshAgent))]
 public class AshBehaviour : MonoBehaviour
 {
-    public GameObject ashObject;
-    public Material greenMaterial;
-    public Material purpleMaterial;
-    public Material blueMaterial;
-    private int rando;
-
-    public List<Transform> targets = new List<Transform>();
-    private int index = -1;
+    public Material[] materials;
     private NavMeshAgent agent;
+    private CubeBehaviour cubeDestination;
 
-    public UnityEvent whenKeyIsPressed;
+    public int colorIndex;
+    public bool loaded = false;
 
 
-    void Start()
+
+    public void Initialize()
     {
-        rando = Random.Range(0, 3);
-        Randomisation();
+        if (materials == null || materials.Length < 4)
+        {
+            Debug.LogError("This component need 4 materials", gameObject);
+        }
+        else
+        {
+            if (!loaded) 
+                colorIndex = UnityEngine.Random.Range(0, 3);
+            GetComponent<Renderer>().material = materials[colorIndex];
+        }
 
 
-        Debug.Log(rando);
+        agent = GetComponent<NavMeshAgent>(); //ne pas oublier d'appeller agent au start!!
 
-        agent = GetComponent<NavMeshAgent>();
-        NextDestination();
+    }
+
+    public void SetDestination(CubeBehaviour cube)
+    {
+        agent.SetDestination(cube.transform.position);
+        cubeDestination = cube;
+    }
+
+    private void ChangeColors()
+    {
+        int exchange = colorIndex;
+        colorIndex = cubeDestination.colorIndex;
+        cubeDestination.colorIndex = exchange;
+
+        GetComponent<Renderer>().material = materials[colorIndex];
+        cubeDestination.GetComponent<Renderer>().material = materials[cubeDestination.colorIndex]; //un simple changement de variables de A à B passant par C (qui est mat)
 
     }
 
     void Update()
     {
-
-        NextDestination();
-
-
-        if (Input.anyKeyDown)
+        if (cubeDestination != null)
         {
-            whenKeyIsPressed?.Invoke();
+            if (Vector3.Distance(cubeDestination.transform.position, transform.position) < 0.5f)
+            {
+                ChangeColors();
+                cubeDestination = null;
+            }
+
         }
     }
 
-    public void NextDestination()
-    {
-        index = (index + 1);
-        agent.SetDestination(targets[index].position);
-    }
 
 
-    void Randomisation()
-    {
-        if (rando == 0)
-        {
-            ashObject.GetComponent<Renderer>().material = greenMaterial;
 
-        }
-        if (rando == 1)
-        {
-            ashObject.GetComponent<Renderer>().material = purpleMaterial;
 
-        }
-        if (rando == 2)
-        { ashObject.GetComponent<Renderer>().material = blueMaterial; }
-    }
 
 
 
